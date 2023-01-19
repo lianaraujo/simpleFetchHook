@@ -1,34 +1,42 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import './App.css'
+import { useState } from "react";
+import { useSearchFetch } from "./useSearchFetch";
 
 function App() {
-  const [count, setCount] = useState(0)
+  const [{ data, isLoading, isError }, doFetch] = useSearchFetch(
+    "https://hn.algolia.com/api/v1/search?query=redux",
+    { hits: [] }
+  );
+  const [query, setQuery] = useState("redux");
 
   return (
-    <div className="App">
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src="/vite.svg" className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://reactjs.org" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
-        </button>
-        <p>
-          Edit <code>src/App.jsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
-    </div>
-  )
+    <>
+      <form
+        onSubmit={(event) => {
+          doFetch(`http://hn.algolia.com/api/v1/search?query=${query}`);
+          event.preventDefault();
+        }}
+      >
+        <input
+          type="text"
+          value={query}
+          onChange={(event) => setQuery(event.target.value)}
+        />
+        <button type="submit">Search</button>
+      </form>
+      {isError && <div>Something went wrong ...</div>}
+      {isLoading ? (
+        <div>Loading...</div>
+      ) : (
+        <ul>
+          {data.hits.map((item) => (
+            <li key={item.objetId}>
+              <a href={item.url}>{item.title}</a>
+            </li>
+          ))}
+        </ul>
+      )}
+    </>
+  );
 }
 
-export default App
+export default App;
